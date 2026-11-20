@@ -96,3 +96,30 @@ resource "aws_iam_user" "github_actions" {
 resource "aws_iam_access_key" "github_actions" {
   user = aws_iam_user.github_actions.name
 }
+
+#------------------------------------------------------------------------------
+# Policy for IAM User created for GitHub Actions
+#------------------------------------------------------------------------------
+resource "aws_iam_user_policy" "github_actions" {
+  user = aws_iam_user.github_actions.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Action    = ["s3:GetObject","s3:PutObject","s3:DeleteObject"]
+        Resource  = "${aws_s3_bucket.my_bucket_website.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = aws_s3_bucket.my_bucket_website.arn
+       },       
+      {
+        Effect = "Allow"
+        Action = "cloudfront:CreateInvalidation"
+        Resource = "*"
+      }
+    ]
+  })
+}
